@@ -6,6 +6,7 @@ import axios from 'axios';
 // import Footer from '../components/Footer';
 import { AdminUserPage } from '../components/AdminUserPage';
 import { AdminBookPage } from '../components/AdminBookPage';
+import { AdminRoomPage } from '../components/AdminRoomPage';
 import { useNavigate } from 'react-router-dom';
 
 // 관리자 페이지
@@ -13,6 +14,7 @@ const AdminPage = () => {
   const [management, setManagement] = useState('user');
   const [userData, setUserData] = useState([]);
   const [bookData, setBookData] = useState([]);
+  const [roomData, setRoomData] = useState([]);
   const [bookRequestsData, setBookRequestsData] = useState([]);
   const [searchingName, setSearchingName] = useState('');
   const [filteredUserData, setFilteredUserData] = useState([]);
@@ -76,6 +78,21 @@ const AdminPage = () => {
     getBookRequestsList();
   }, [changeBookStatus]);
 
+  // 첫 객실 데이터
+  useEffect(() => {
+    async function getRoomList() {
+      const roomData = await axios.get(
+        `${process.env.REACT_APP_BACKEND_SERVER_URL}/api/room`,
+        {
+          withCredentials: true,
+        }
+      );
+      const roomList = roomData.data;
+      setRoomData(roomList);
+    }
+    getRoomList();
+  }, []);
+
   const userManage = (e) => {
     e.preventDefault();
     setManagement('user');
@@ -84,6 +101,11 @@ const AdminPage = () => {
   const bookManage = (e) => {
     e.preventDefault();
     setManagement('book');
+  };
+
+  const roomManage = (e) => {
+    e.preventDefault();
+    setManagement('room');
   };
 
   // 이름으로 찾기
@@ -185,6 +207,17 @@ const AdminPage = () => {
                 예약관리
               </ManageBookSpan>
             </BookManage>
+            <RoomManage onClick={(e) => roomManage(e)}>
+              <ManageRoomSpan
+                management={management}
+                onClick={() => {
+                  setSearchingName('');
+                  setCurrentPage(1);
+                }}
+              >
+                객실관리
+              </ManageRoomSpan>
+            </RoomManage>
             <NameInput
               placeholder="이름"
               value={searchingName}
@@ -203,7 +236,7 @@ const AdminPage = () => {
               currentPage={currentPage}
               dataPerPage={dataPerPage}
             />
-          ) : (
+          ) : management === 'book' ? (
             <AdminBookPage
               filteredBookData={filteredBookData}
               filteredBookRequestsData={filteredBookRequestsData}
@@ -219,6 +252,8 @@ const AdminPage = () => {
               currentData={currentData}
               setSearchingName={setSearchingName}
             />
+          ) : (
+            <AdminRoomPage roomData={roomData}></AdminRoomPage>
           )}
         </Body>
       </Container>
@@ -269,6 +304,18 @@ const BookManage = styled.div`
   }
 `;
 
+const RoomManage = styled.div`
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 29px;
+  height: 30px;
+  :hover {
+    cursor: pointer;
+  }
+`;
+
 const ManageUserSpan = styled.span`
   font-family: 'Noto Sans KR';
   font-style: normal;
@@ -278,8 +325,6 @@ const ManageUserSpan = styled.span`
   padding: 0px 8px 6px 8px;
   border-bottom: ${(props) =>
     props.management == 'user' ? '3px #8AA8CD solid' : ''};
-  border-right: ${(props) =>
-    props.management == 'user' ? '1px solid black' : ''};
 `;
 
 const ManageBookSpan = styled.span`
@@ -291,8 +336,17 @@ const ManageBookSpan = styled.span`
   padding: 0px 8px 6px 8px;
   border-bottom: ${(props) =>
     props.management == 'book' ? '3px #8AA8CD solid' : ''};
-  border-left: ${(props) =>
-    props.management == 'book' ? '1px solid black' : ''};
+`;
+
+const ManageRoomSpan = styled.span`
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 29px;
+  padding: 0px 8px 6px 8px;
+  border-bottom: ${(props) =>
+    props.management == 'room' ? '3px #8AA8CD solid' : ''};
 `;
 
 const NameInput = styled.input`
